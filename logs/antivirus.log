@@ -1,0 +1,24 @@
+2024-09-26 14:50:07,874 - Signature database is up to date.
+2024-09-26 14:50:47,310 - Signature database is up to date.
+2024-09-26 14:50:52,369 - Scan completed. Scanned: 49, Threats: 0, Time: 0.02s
+2024-09-26 14:54:50,411 - Signature database is up to date.
+2024-09-26 14:56:40,896 - Signature database is up to date.
+2024-09-26 14:56:52,601 - Scan completed. Scanned: 49, Threats: 0, Time: 4.07s
+2024-09-26 14:58:12,535 - Scan completed. Scanned: 49, Threats: 0, Time: 0.03s
+2024-09-26 14:58:34,319 - Scan completed. Scanned: 49, Threats: 0, Time: 0.02s
+2024-09-26 15:03:06,569 - Signature database is up to date.
+2024-09-26 15:03:24,419 - Scan completed. Scanned: 1, Threats: 0, Time: 0.01s
+2024-09-26 15:03:34,809 - Scan completed. Scanned: 1, Threats: 0, Time: 0.01s
+2024-09-26 15:03:56,304 - Scan completed. Scanned: 1, Threats: 0, Time: 0.00s
+2024-09-26 15:05:21,255 - Signature database is up to date.
+2024-09-26 15:05:26,388 - Scan completed. Scanned: 1, Threats: 0, Time: 0.00s
+2024-09-26 15:05:33,715 - Scan completed. Scanned: 1, Threats: 0, Time: 0.00s
+2024-09-26 15:09:12,703 - Signature database is up to date.
+2024-09-26 15:09:18,156 - Threat found: C:/Users/Ахмет/Desktop/Реальный проект/eicar/eicar\eicar.com (EICAR Test Virus)
+2024-09-26 15:09:18,157 - Scan completed. Scanned: 1, Threats: 1, Time: 0.00s
+2024-09-26 15:09:53,917 - Scan completed. Scanned: 1, Threats: 0, Time: 0.00s
+2024-09-26 15:09:57,139 - Threat found: C:/Users/Ахмет/Desktop/Реальный проект/eicar/eicar\eicar.com (EICAR Test Virus)
+2024-09-26 15:09:57,140 - Scan completed. Scanned: 1, Threats: 1, Time: 0.00s
+2024-09-26 15:10:02,956 - Scan completed. Scanned: 1, Threats: 0, Time: 0.00s
+2024-09-26 15:10:04,922 - Threat found: C:/Users/Ахмет/Desktop/Реальный проект/eicar/eicar\eicar.com (EICAR Test Virus)
+2024-09-26 15:10:04,923 - Scan completed. Scanned: 1, Threats: 1, Time: 0.01s
