@@ -1,4 +1,19 @@
-md5_hash,description
-d41d8cd98f00b204e9800998ecf8427e, Empty File (Test)
-e99a18c428cb38d5f260853678922e03, Test Virus (Example)
-44d88612fea8a8f36de82e1278abb02f,EICAR Test Virus
+hash,description
+d41d8cd98f00b204e9800998ecf8427e,Test Virus
+098f6bcd4621d373cade4e832627b4f6,Another Test Virus
+e99a18c428cb38d5f260853678922e03,Heuristic Threat
+c4ca4238a0b923820dcc509a6f75849b,Worm Virus
+45c48cce2e2d7fbdea1afc51c7c6ad26,Ransomware
+9d5ed678fe57bcca610140957afab571,Potentially Unwanted Program (PUP)
+70efdf2ec9b086079795c442636b55fb,Spyware
+f96b697d7cb7938d525a2f31aaf161d0,Rootkit Virus
+4a8a08f09d37b73795649038408b5f33,Backdoor
+8277e0910d750195b448797616e091ad,File Infector Virus
+5f4dcc3b5aa765d61d8327deb882cf99,Password Stealer
+3b5d5c3712955042212316173ccf37be,Keylogger
+1c383cd30b7c298ab50293adfecb7b18,Polymorphic Virus
+7c6a180b36896a0a8c02787eeafb0e4c,Ransomware Variant
+6dcd4ce23d88e2ee9568ba546c007c63,Botnet Virus
+5ebe2294ecd0e0f08eab7690d2a6ee69,Malware Dropper
+,
+,

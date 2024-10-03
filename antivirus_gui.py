@@ -1,12 +1,12 @@
+import csv
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
 import time
 import os
-import hashlib  # Для работы с MD5 и SHA-256
-from scanner import scan_directory, load_signatures
+import hashlib
+from scanner import scan_directory
 import requests  # Для обновления базы сигнатур
-import logging  # Для логирования
-
+import logging
 
 class AntivirusApp:
     def __init__(self, root):
@@ -22,57 +22,60 @@ class AntivirusApp:
         logging.basicConfig(filename='logs/antivirus.log', level=logging.INFO, format='%(asctime)s - %(message)s')
 
         # Загрузка базы сигнатур
-        self.signatures = load_signatures()
+        self.signatures = {}
         self.update_signatures()  # Проверить наличие обновлений при запуске
 
         # Тип хэширования
         self.hash_type = tk.StringVar(value="MD5")
 
-        # Метка для информации
-        self.label = tk.Label(root, text="Choose a scan type:")
+        # Интерфейс
+        self.setup_ui()
+
+    def setup_ui(self):
+        # Метки и кнопки интерфейса
+        self.label = tk.Label(self.root, text="Choose a scan type:")
         self.label.pack(pady=10)
 
-        # Радио кнопки для выбора типа сканирования (Полное или Выборочное)
+        # Радио-кнопки для выбора типа сканирования
         self.scan_type = tk.StringVar(value="Full")
-        self.full_scan_radiobutton = tk.Radiobutton(root, text="Full Scan", variable=self.scan_type, value="Full")
+        self.full_scan_radiobutton = tk.Radiobutton(self.root, text="Full Scan", variable=self.scan_type, value="Full")
         self.full_scan_radiobutton.pack(pady=5)
 
-        self.custom_scan_radiobutton = tk.Radiobutton(root, text="Custom Scan", variable=self.scan_type, value="Custom")
+        self.custom_scan_radiobutton = tk.Radiobutton(self.root, text="Custom Scan", variable=self.scan_type, value="Custom")
         self.custom_scan_radiobutton.pack(pady=5)
 
-        # Кнопки для выбора типа хэширования
-        self.md5_radiobutton = tk.Radiobutton(root, text="MD5", variable=self.hash_type, value="MD5")
+        # Радио-кнопки для выбора типа хэширования
+        self.md5_radiobutton = tk.Radiobutton(self.root, text="MD5", variable=self.hash_type, value="MD5")
         self.md5_radiobutton.pack(pady=5)
 
-        self.sha256_radiobutton = tk.Radiobutton(root, text="SHA-256", variable=self.hash_type, value="SHA-256")
+        self.sha256_radiobutton = tk.Radiobutton(self.root, text="SHA-256", variable=self.hash_type, value="SHA-256")
         self.sha256_radiobutton.pack(pady=5)
 
-        # Кнопка для выбора директории
-        self.scan_button = tk.Button(root, text="Select Directory", command=self.select_directory)
+        # Кнопки для выбора директории
+        self.scan_button = tk.Button(self.root, text="Select Directory", command=self.select_directory)
         self.scan_button.pack(pady=10)
 
-        # Метка для отображения выбранного пути
-        self.selected_dir_label = tk.Label(root, text="")
+        self.selected_dir_label = tk.Label(self.root, text="")
         self.selected_dir_label.pack(pady=10)
 
         # Кнопка для запуска сканирования
-        self.start_scan_button = tk.Button(root, text="Start Scan", command=self.start_scan)
+        self.start_scan_button = tk.Button(self.root, text="Start Scan", command=self.start_scan)
         self.start_scan_button.pack(pady=10)
 
         # Прогресс-бар
-        self.progress = ttk.Progressbar(root, orient="horizontal", mode="determinate")
+        self.progress = ttk.Progressbar(self.root, orient="horizontal", mode="determinate")
         self.progress.pack(pady=10, fill=tk.X, padx=20)
 
-        # Текстовое поле для вывода результатов
-        self.result_text = tk.Text(root, height=10, width=70)
+        # Поле для вывода результатов
+        self.result_text = tk.Text(self.root, height=10, width=70)
         self.result_text.pack(pady=10)
 
-        # Поле для вывода статистики
-        self.stats_label = tk.Label(root, text="Stats: Scanned Files: 0, Threats Found: 0, Time: 0s")
+        # Статистика
+        self.stats_label = tk.Label(self.root, text="Stats: Scanned Files: 0, Threats Found: 0, Time: 0s")
         self.stats_label.pack(pady=10)
 
         # Кнопка для генерации отчета
-        self.report_button = tk.Button(root, text="Generate Report", command=self.generate_report)
+        self.report_button = tk.Button(self.root, text="Generate Report", command=self.generate_report)
         self.report_button.pack(pady=10)
 
     def select_directory(self):
@@ -152,14 +155,31 @@ class AntivirusApp:
 
     def update_signatures(self):
         try:
-            # Здесь ты можешь добавить логику для загрузки обновлений с удалённого сервера.
-            # response = requests.get('https://example.com/signatures.csv')
-            logging.info("Signature database is up to date.")
-        except Exception as e:
+            # API URL для получения списка сигнатур
+            response = requests.get('https://creativecode.kz/api/signatures')
+            response.raise_for_status()  # Проверяем, что запрос успешен (статус 200)
+
+            # Обновляем локальные сигнатуры
+            self.signatures = {item['hash']: item['description'] for item in response.json()}
+
+            # Логируем обновление
+            logging.info("Signature database updated successfully.")
+            messagebox.showinfo("Update", "Signature database updated successfully.")
+
+            # Сохранение сигнатур в файл signatures.csv
+            with open('signatures.csv', mode='w', newline='') as file:
+                writer = csv.writer(file)
+                writer.writerow(['hash', 'description'])  # Записываем заголовки
+                for hash_val, description in self.signatures.items():
+                    writer.writerow([hash_val, description])  # Записываем хэш и описание
+
+            logging.info("Signatures saved to signatures.csv successfully.")
+
+        except requests.exceptions.RequestException as e:
+            # В случае ошибки HTTP-запроса
             logging.error(f"Failed to update signature database: {e}")
             messagebox.showerror("Update Error",
                                  "Failed to update signature database. Please check your internet connection.")
-
 
 if __name__ == "__main__":
     root = tk.Tk()
