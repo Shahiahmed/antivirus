@@ -1,0 +1,9 @@
+2024-12-05 15:34:07,147 - Pika version 1.3.2 connecting to ('::1', 5672, 0, 0)
+2024-12-05 15:34:07,148 - Socket connected: <socket.socket fd=748, family=23, type=1, proto=6, laddr=('::1', 51397, 0, 0), raddr=('::1', 5672, 0, 0)>
+2024-12-05 15:34:07,148 - Streaming transport linked up: (<pika.adapters.utils.io_services_utils._AsyncPlaintextTransport object at 0x000001D7740282F0>, _StreamingProtocolShim: <SelectConnection PROTOCOL transport=<pika.adapters.utils.io_services_utils._AsyncPlaintextTransport object at 0x000001D7740282F0> params=<ConnectionParameters host=localhost port=5672 virtual_host=/ ssl=False>>).
+2024-12-05 15:34:07,156 - AMQPConnector - reporting success: <SelectConnection OPEN transport=<pika.adapters.utils.io_services_utils._AsyncPlaintextTransport object at 0x000001D7740282F0> params=<ConnectionParameters host=localhost port=5672 virtual_host=/ ssl=False>>
+2024-12-05 15:34:07,156 - AMQPConnectionWorkflow - reporting success: <SelectConnection OPEN transport=<pika.adapters.utils.io_services_utils._AsyncPlaintextTransport object at 0x000001D7740282F0> params=<ConnectionParameters host=localhost port=5672 virtual_host=/ ssl=False>>
+2024-12-05 15:34:07,156 - Connection workflow succeeded: <SelectConnection OPEN transport=<pika.adapters.utils.io_services_utils._AsyncPlaintextTransport object at 0x000001D7740282F0> params=<ConnectionParameters host=localhost port=5672 virtual_host=/ ssl=False>>
+2024-12-05 15:34:07,156 - Created channel=1
+2024-12-05 15:34:07,158 - Starting scan for C:/Users/ΐυμες/Desktop/.idea/inspectionProfiles\profiles_settings.xml with hash type MD5
+2024-12-05 15:34:07,163 - Starting scan for C:/Users/ΐυμες/Desktop/.idea/inspectionProfiles\Project_Default.xml with hash type MD5

@@ -1,12 +1,13 @@
-import csv
+# antivirus_gui.py
+import threading
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
 import time
 import os
-import hashlib
-from scanner import scan_directory
-import requests  # Для обновления базы сигнатур
+from result_handler import ResultHandler, run_result_handler
 import logging
+from producer import send_scan_task
+from scanner import scan_directory, load_signatures
 
 class AntivirusApp:
     def __init__(self, root):
@@ -22,14 +23,16 @@ class AntivirusApp:
         logging.basicConfig(filename='logs/antivirus.log', level=logging.INFO, format='%(asctime)s - %(message)s')
 
         # Загрузка базы сигнатур
-        self.signatures = {}
-        self.update_signatures()  # Проверить наличие обновлений при запуске
-
-        # Тип хэширования
-        self.hash_type = tk.StringVar(value="MD5")
+        self.signatures = load_signatures('threat_db')  # Загрузка из папки threat_db
+        logging.info("Signature database loaded successfully.")
 
         # Интерфейс
         self.setup_ui()
+
+        # Запуск обработчика результатов в отдельном потоке
+        self.result_handler = ResultHandler(self.result_text, self.stats_label)
+        self.result_thread = threading.Thread(target=run_result_handler, args=(self.result_handler,), daemon=True)
+        self.result_thread.start()
 
     def setup_ui(self):
         # Метки и кнопки интерфейса
@@ -44,12 +47,13 @@ class AntivirusApp:
         self.custom_scan_radiobutton = tk.Radiobutton(self.root, text="Custom Scan", variable=self.scan_type, value="Custom")
         self.custom_scan_radiobutton.pack(pady=5)
 
-        # Радио-кнопки для выбора типа хэширования
-        self.md5_radiobutton = tk.Radiobutton(self.root, text="MD5", variable=self.hash_type, value="MD5")
-        self.md5_radiobutton.pack(pady=5)
+        # Удаление выбора типа хэширования, так как используем только TLSH
+        # self.hash_type = tk.StringVar(value="MD5")
+        # self.md5_radiobutton = tk.Radiobutton(self.root, text="MD5", variable=self.hash_type, value="MD5")
+        # self.md5_radiobutton.pack(pady=5)
 
-        self.sha256_radiobutton = tk.Radiobutton(self.root, text="SHA-256", variable=self.hash_type, value="SHA-256")
-        self.sha256_radiobutton.pack(pady=5)
+        # self.sha256_radiobutton = tk.Radiobutton(self.root, text="SHA-256", variable=self.hash_type, value="SHA-256")
+        # self.sha256_radiobutton.pack(pady=5)
 
         # Кнопки для выбора директории
         self.scan_button = tk.Button(self.root, text="Select Directory", command=self.select_directory)
@@ -85,8 +89,9 @@ class AntivirusApp:
                 self.selected_dir_label.config(text=f"Selected: {selected_dir}")
                 self.selected_dir = selected_dir
         else:
-            self.selected_dir_label.config(text="Selected: Entire File System")
-            self.selected_dir = "/"
+            # Для Windows корневой директории лучше выбрать диски (например, C:\\, D:\\ и т.д.)
+            self.selected_dir_label.config(text="Selected: C:\\")
+            self.selected_dir = "C:\\"
 
     def start_scan(self):
         if hasattr(self, 'selected_dir'):
@@ -108,29 +113,22 @@ class AntivirusApp:
             self.scan_report = []  # Сохраняем результаты сканирования в этот список
 
             for file in all_files:
-                self.progress['value'] = (scanned_files / total_files) * 100
-                self.root.update_idletasks()
-
-                threats = scan_directory(file, self.signatures, self.hash_type.get())  # Передаем выбранный тип хэша
-                if threats:
-                    for threat in threats:
-                        self.result_text.insert(tk.END, f"Threat found: {threat[0]} ({threat[1]})\n")
-                        threats_found += 1
-                        logging.info(f"Threat found: {threat[0]} ({threat[1]})")
-                        self.scan_report.append(f"Threat found: {threat[0]} ({threat[1]})")
-
+                send_scan_task(file)  # Передаём только file_path
                 scanned_files += 1
+                self.result_handler.increment_scanned_files()
+                self.progress['value'] = (scanned_files / total_files) * 100
                 elapsed_time = time.time() - start_time
                 self.stats_label.config(
                     text=f"Stats: Scanned Files: {scanned_files}, Threats Found: {threats_found}, Time: {elapsed_time:.2f}s")
+                self.root.update_idletasks()
 
             elapsed_time = time.time() - start_time
             self.result_text.insert(tk.END,
-                                    f"Scan completed. Total scanned: {scanned_files}, Threats found: {threats_found}, Time: {elapsed_time:.2f}s\n")
+                                    f"Scan tasks dispatched. Total files: {scanned_files}, Time: {elapsed_time:.2f}s\n")
             logging.info(
-                f"Scan completed. Scanned: {scanned_files}, Threats: {threats_found}, Time: {elapsed_time:.2f}s")
+                f"Scan tasks dispatched. Scanned: {scanned_files}, Time: {elapsed_time:.2f}s")
             self.scan_report.append(
-                f"Scan completed. Scanned: {scanned_files}, Threats: {threats_found}, Time: {elapsed_time:.2f}s")
+                f"Scan tasks dispatched. Scanned: {scanned_files}, Time: {elapsed_time:.2f}s")
         else:
             messagebox.showwarning("Warning", "Please select a directory first.")
 
@@ -152,34 +150,6 @@ class AntivirusApp:
             with open(report_path, 'w') as report_file:
                 report_file.write("\n".join(self.scan_report))
             messagebox.showinfo("Report", f"Report saved to {report_path}")
-
-    def update_signatures(self):
-        try:
-            # API URL для получения списка сигнатур
-            response = requests.get('https://creativecode.kz/api/signatures')
-            response.raise_for_status()  # Проверяем, что запрос успешен (статус 200)
-
-            # Обновляем локальные сигнатуры
-            self.signatures = {item['hash']: item['description'] for item in response.json()}
-
-            # Логируем обновление
-            logging.info("Signature database updated successfully.")
-            messagebox.showinfo("Update", "Signature database updated successfully.")
-
-            # Сохранение сигнатур в файл signatures.csv
-            with open('signatures.csv', mode='w', newline='') as file:
-                writer = csv.writer(file)
-                writer.writerow(['hash', 'description'])  # Записываем заголовки
-                for hash_val, description in self.signatures.items():
-                    writer.writerow([hash_val, description])  # Записываем хэш и описание
-
-            logging.info("Signatures saved to signatures.csv successfully.")
-
-        except requests.exceptions.RequestException as e:
-            # В случае ошибки HTTP-запроса
-            logging.error(f"Failed to update signature database: {e}")
-            messagebox.showerror("Update Error",
-                                 "Failed to update signature database. Please check your internet connection.")
 
 if __name__ == "__main__":
     root = tk.Tk()
